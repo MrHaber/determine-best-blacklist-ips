@@ -6,21 +6,22 @@ import java.util.Arrays;
 public class IntHashSet implements IntSet {
 	private static final int NBIT = 30;
 	private static final int MAX_SIZE = 1073741824;
+	private static final int minimal_value = 0x7fffffff;
 	private final int ndv;
-	private int _nmax;
-	private int _size;
-	private int _nlo;
-	private int _nhi;
-	private int _shift;
-	private int _mask;
-	private int[] _values;
+	private int nmax;
+	private int size;
+	private int nlo;
+	private int nhi;
+	private int shift;
+	private int mask;
+	private int[] values;
 
 	public IntHashSet() {
-		this(8, -2147483648);
+		this(8, minimal_value);
 	}
 
 	public IntHashSet(int capacity) {
-		this(capacity, -2147483648);
+		this(capacity, minimal_value);
 	}
 
 	public IntHashSet(int capacity, int noDataValue) {
@@ -30,22 +31,22 @@ public class IntHashSet implements IntSet {
 
 	@Override
 	public void clear() {
-		this._size = 0;
+		this.size = 0;
 
-		for(int i = 0; i < this._nmax; ++i) {
-			this._values[i] = this.ndv;
+		for(int i = 0; i < this.nmax; ++i) {
+			this.values[i] = this.ndv;
 		}
 
 	}
 
 	@Override
 	public int size() {
-		return this._size;
+		return this.size;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return this._size == 0;
+		return this.size == 0;
 	}
 
 	public int[] getValues() {
@@ -55,9 +56,9 @@ public class IntHashSet implements IntSet {
 		int var4 = var3.length;
 
 		for(int var5 = 0; var5 < var4; ++var5) {
-			int _value = var3[var5];
-			if (_value != this.ndv) {
-				values[index++] = _value;
+			int value = var3[var5];
+			if (value != this.ndv) {
+				values[index++] = value;
 			}
 		}
 
@@ -66,19 +67,19 @@ public class IntHashSet implements IntSet {
 
 	@Override
 	public boolean contains(int value) {
-		return this._values[this.indexOf(value)] != this.ndv;
+		return this.values[this.indexOf(value)] != this.ndv;
 	}
 
 	@Override
 	public boolean remove(int value) {
 		int i = this.indexOf(value);
-		if (this._values[i] == this.ndv) {
+		if (this.values[i] == this.ndv) {
 			return false;
 		} else {
 			--this._size;
 
 			while(true) {
-				this._values[i] = this.ndv;
+				this.values[i] = this.ndv;
 				int j = i;
 
 				int r;
@@ -86,16 +87,16 @@ public class IntHashSet implements IntSet {
 					do {
 						do {
 							i = i - 1 & this._mask;
-							if (this._values[i] == this.ndv) {
+							if (this.values[i] == this.ndv) {
 								return true;
 							}
 
-							r = this.hash(this._values[i]);
+							r = this.hash(this.values[i]);
 						} while(i <= r && r < j);
 					} while(r < j && j < i);
 				} while(j < i && i <= r);
 
-				this._values[j] = this._values[i];
+				this.values[j] = this.values[i];
 			}
 		}
 	}
@@ -106,13 +107,13 @@ public class IntHashSet implements IntSet {
 			throw new IllegalArgumentException("Can't add the 'no data' value");
 		} else {
 			int i = this.indexOf(value);
-			if (this._values[i] == this.ndv) {
-				++this._size;
-				this._values[i] = value;
-				if (this._size > 1073741824) {
+			if (this.values[i] == this.ndv) {
+				++this.size;
+				this.values[i] = value;
+				if (this.size > 1073741824) {
 					throw new RuntimeException("Too many elements (> 1073741824)");
 				} else {
-					if (this._nlo < this._size && this._size <= this._nhi) {
+					if (this.nlo < this.size && this.size <= this._nhi) {
 						this.setCapacity(this._size);
 					}
 
@@ -130,8 +131,8 @@ public class IntHashSet implements IntSet {
 
 	private int indexOf(int value) {
 		int i;
-		for(i = this.hash(value); this._values[i] != this.ndv; i = i - 1 & this._mask) {
-			if (this._values[i] == value) {
+		for(i = this.hash(value); this._values[i] != this.ndv; i = i - 1 & this.mask) {
+			if (this.values[i] == value) {
 				return i;
 			}
 		}
@@ -153,21 +154,21 @@ public class IntHashSet implements IntSet {
 
 		int nold = this._nmax;
 		if (nmax != nold) {
-			this._nmax = nmax;
-			this._nlo = nmax / 4;
-			this._nhi = 268435456;
-			this._shift = 31 - nbit;
-			this._mask = nmax - 1;
-			this._size = 0;
+			this.nmax = nmax;
+			this.nlo = nmax / 4;
+			this.nhi = 268435456;
+			this.shift = 31 - nbit;
+			this.mask = nmax - 1;
+			this.size = 0;
 			int[] values = this._values;
-			this._values = new int[nmax];
-			Arrays.fill(this._values, this.ndv);
+			this.values = new int[nmax];
+			Arrays.fill(this.values, this.ndv);
 			if (values != null) {
 				for(int i = 0; i < nold; ++i) {
 					int value = values[i];
 					if (value != this.ndv) {
 						++this._size;
-						this._values[this.indexOf(value)] = value;
+						this.values[this.indexOf(value)] = value;
 					}
 				}
 			}
